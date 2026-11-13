@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Ledger — watching a session</title>
+  <meta name="description" content="Watch a Ledger practice session live and record what you observed." />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <meta name="theme-color" content="#123B3A" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<!--
+  A separate page, and that is the point rather than an accident.
+
+  It never imports store.js, so it has no GitHub config, no token, and no way
+  to read a practice log even if something here were wrong. What the person
+  watching can see is what arrives on the relay from one session: the problem,
+  the drawing, the code. Prior attempts, soul statements and older code have
+  nowhere to leak from, because on this side they do not exist.
+-->
+<body class="interview-body">
+  <header class="topbar">
+    <h1 class="brand"><span class="brand-mark" aria-hidden="true">{ }</span> Ledger</h1>
+    <span class="channel-badge" style="background:var(--accent);color:#0c1512">Watching</span>
+    <div class="row gap-sm" style="align-items:center;margin-left:auto">
+      <span id="iv-phase" class="mock-phase"></span>
+      <span id="iv-clock" class="session-clock">--:--</span>
+      <span id="iv-status" class="status"></span>
+    </div>
+  </header>
+  <main id="iv-root" tabindex="-1"></main>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="js/interview.js"></script>
+</body>
+</html>

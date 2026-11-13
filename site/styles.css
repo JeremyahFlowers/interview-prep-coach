@@ -1,0 +1,2227 @@
+:root {
+  --bg: #f6f7f6;
+  --surface: #ffffff;
+  --surface-alt: #eef1f0;
+  --border: #dce1df;
+  --text: #14201d;
+  --text-muted: #5a6864;
+  --accent: #1f8a82;
+  --accent-strong: #146860;
+  --accent-contrast: #ffffff;
+  --good: #2f8f5b;
+  --warn: #b5701f;
+  --bad: #b23a35;
+  --good-bg: #e4f3ea;
+  --warn-bg: #fbf0e0;
+  --bad-bg: #fbe7e5;
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(20, 32, 29, 0.06), 0 1px 1px rgba(20, 32, 29, 0.04);
+  /* Page gutter scales with the viewport: a phone can't spare 2rem either
+     side, and a 27" monitor looks wrong without it. */
+  --page-pad: clamp(0.75rem, 1.6vw, 1.75rem);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1512;
+    --surface: #16201c;
+    --surface-alt: #1c2723;
+    --border: #28352f;
+    --text: #e7efeb;
+    --text-muted: #93a29b;
+    --accent: #4fc3b8;
+    --accent-strong: #7ed9cf;
+    --accent-contrast: #06201c;
+    --good: #59c98a;
+    --warn: #e0a257;
+    --bad: #e2827c;
+    --good-bg: #17301f;
+    --warn-bg: #332412;
+    --bad-bg: #3a1c19;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1512;
+  --surface: #16201c;
+  --surface-alt: #1c2723;
+  --border: #28352f;
+  --text: #e7efeb;
+  --text-muted: #93a29b;
+  --accent: #4fc3b8;
+  --accent-strong: #7ed9cf;
+  --accent-contrast: #06201c;
+  --good: #59c98a;
+  --warn: #e0a257;
+  --bad: #e2827c;
+  --good-bg: #17301f;
+  --warn-bg: #332412;
+  --bad-bg: #3a1c19;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { text-wrap: balance; margin: 0 0 0.6rem; font-weight: 650; }
+h2 { font-size: 1.05rem; letter-spacing: -0.01em; }
+p { margin: 0 0 0.6rem; }
+code { font-family: var(--font-mono); font-size: 0.9em; background: var(--surface-alt); padding: 0.1em 0.4em; border-radius: 4px; }
+a { color: var(--accent-strong); }
+[hidden] { display: none !important; }
+
+/* Three columns rather than flex space-between, so the search bar is centred
+   on the header itself. Under flex it was centred on whatever the brand and
+   the status chips left over, and those change width as the sync state
+   changes — the bar visibly drifted as the app saved. */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: grid; align-items: center;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.topbar > .row:last-child { justify-self: end; }
+/* This is the document's h1, for heading structure — but the size is the
+   wordmark's, not the browser's h1 default, so font-size and margin are stated
+   explicitly rather than inherited. */
+.brand {
+  display: flex; align-items: baseline; gap: 0.5rem;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.brand-mark { font-family: var(--font-mono); color: var(--accent); }
+.status { font-size: 0.8rem; padding: 0.25rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+.status-good { color: var(--good); background: var(--good-bg); }
+.status-warn { color: var(--warn); background: var(--warn-bg); }
+.status-bad { color: var(--bad); background: var(--bad-bg); }
+.status-info { color: var(--text-muted); background: var(--surface-alt); }
+
+.tab-nav {
+  display: flex; flex-direction: column;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.nav-row {
+  display: flex; align-items: center; gap: 0.25rem; overflow-x: auto;
+  padding: 0.5rem 1rem; -webkit-overflow-scrolling: touch;
+}
+.nav-row::-webkit-scrollbar { display: none; }
+.nav-row-primary { font-size: 0.95rem; }
+.nav-row-secondary {
+  padding-top: 0; padding-bottom: 0.5rem; gap: 0.35rem;
+}
+.nav-chapter-label {
+  flex: none; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-muted); padding-right: 0.15rem;
+}
+.icon { display: inline-block; vertical-align: middle; flex: none; }
+.tab {
+  flex: none; display: inline-flex; align-items: center; gap: 0.35rem;
+  font-family: inherit; font-size: 0.85rem; font-weight: 600;
+  color: var(--text-muted); background: transparent; border: 1px solid transparent;
+  border-radius: 999px; padding: 0.45rem 0.85rem; cursor: pointer;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent-contrast); background: var(--accent); }
+.tab-sub { font-size: 0.76rem; padding: 0.3rem 0.65rem; }
+.tab-sub.active { background: var(--surface-alt); color: var(--text); border-color: var(--border); }
+
+/* One 960px column used to govern every page, which meant the mastery table
+   and a page of prose got identical width — cramped for the table on a large
+   monitor, far too wide for the prose to read comfortably. Width is now a
+   property of the content: app.js stamps a tier on <main> per page, and a tier
+   only moves --page-max.
+
+   Widening everything is not the goal. A line of body text wants roughly
+   65-75 characters however large the display is, so the reading pages stay
+   deliberately narrow. It's the grids, tables and catalogs that were being
+   held back, and the workspace that wants the whole window. */
+main {
+  width: 100%;
+  max-width: var(--page-max, 1120px);
+  margin-inline: auto;
+  padding: var(--page-pad);
+  display: block;
+}
+/* Dashboards, catalogs and wide tables: as much room as the screen offers. */
+main.page-wide { --page-max: 1560px; }
+/* Prose. Narrower than the default, on purpose. */
+main.page-read { --page-max: 880px; }
+/* The session workspace is an IDE, not a document — it owns its own edges. */
+main.page-full { --page-max: none; padding: 0; }
+
+/* A button that is given no surface of its own should look like the page it
+   is on, not like the operating system. Without this the component library
+   shipped as light-grey UA buttons in a dark theme, with near-white headings
+   on them that could not be read at all — the class list said `index-card`
+   where every other index says `card index-card`, and nothing failed. */
+button { background: transparent; color: inherit; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+.grid { display: grid; gap: 1rem; }
+.dashboard-grid { grid-template-columns: 1fr; }
+@media (min-width: 720px) {
+  .dashboard-grid { grid-template-columns: 1fr 1fr; }
+  .dashboard-grid .streak-card, .dashboard-grid > .card:nth-child(2) { grid-column: 1 / -1; }
+}
+/* Past roughly 1200px two columns leave a lot of empty card; a third keeps the
+   cards at a readable width instead of letting each one sprawl. The recommendation
+   and today's plan stay full-bleed at the top — they're what the page is for. */
+@media (min-width: 1200px) {
+  .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.muted { color: var(--text-muted); }
+.small { font-size: 0.82rem; }
+.empty { color: var(--text-muted); font-style: italic; }
+.row { display: flex; align-items: center; }
+.gap { gap: 0.75rem; flex-wrap: wrap; }
+.gap-sm { gap: 0.4rem; flex-wrap: wrap; }
+.space-between { justify-content: space-between; }
+
+.stat-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.stat { display: flex; flex-direction: column; }
+.stat-num { font-family: var(--font-mono); font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat-label { color: var(--text-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.queue-list, .pattern-mini-list, .journal-list, .checklist { list-style: none; margin: 0; padding: 0; }
+.queue-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  padding: 0.6rem 0; border-bottom: 1px solid var(--border);
+}
+.queue-item:last-child { border-bottom: none; }
+/* Rows in the bank are focusable so they can be walked with the arrow keys;
+   the browser's own ring is the highlight, which keeps it consistent with
+   every other focusable thing on the page. */
+.queue-item:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 6px;
+}
+.queue-name { font-weight: 600; margin-top: 0.2rem; }
+.pattern-mini-list li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.pattern-mini-list li:last-child { border-bottom: none; }
+
+.journal-list li { padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
+.journal-list li:last-child { border-bottom: none; }
+.journal-list p { white-space: pre-wrap; margin-top: 0.3rem; }
+
+.pill {
+  font-size: 0.72rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 999px;
+  background: var(--surface-alt); color: var(--text-muted);
+}
+.pill-muted { background: var(--surface-alt); color: var(--text-muted); }
+.pill-warn { background: var(--warn-bg); color: var(--warn); }
+.pill-good { background: var(--good-bg); color: var(--good); }
+/* Missing until the outcome pills stopped being hand-written: the table has
+   said "failed" is bad since it was written, and the hand-copied pill map
+   quietly called it a warning instead, which is why nothing ever asked for
+   this rule. */
+.pill-bad { background: var(--bad-bg); color: var(--bad); }
+
+.badge { display: inline-block; font-size: 0.78rem; font-weight: 700; padding: 0.3rem 0.7rem; border-radius: 6px; }
+.badge-good { background: var(--good-bg); color: var(--good); }
+.badge-warn { background: var(--warn-bg); color: var(--warn); }
+.badge-bad { background: var(--bad-bg); color: var(--bad); }
+
+.bar { height: 6px; border-radius: 999px; background: var(--surface-alt); overflow: hidden; margin: 0.3rem 0; }
+.bar-fill { height: 100%; background: var(--accent); }
+.bar-inline { display: inline-block; width: 70px; vertical-align: middle; margin-right: 0.5rem; margin-bottom: 0; }
+
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.table th, .table td { text-align: left; padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.table th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.table td.num, .table th:nth-child(n+2) { font-variant-numeric: tabular-nums; }
+
+.form { display: flex; flex-direction: column; gap: 0.85rem; }
+/* A flex column stretches every child, which made each form's submit button
+   span the full card — reading as a far weightier action than "add a note".
+   Fields still fill the width; the button takes the width of its label, like
+   every other button in the app. */
+.form > .btn { align-self: flex-start; }
+.two-col { display: grid; grid-template-columns: 1fr; gap: 0.85rem; }
+@media (min-width: 560px) { .two-col { grid-template-columns: 1fr 1fr; } }
+/* Checkboxes, radios and range sliders are drawn by the browser, and left to
+   themselves they are drawn in the browser's blue — which in a dark teal theme
+   reads as a control belonging to some other application. One property themes
+   every one of them. */
+:root { accent-color: var(--accent); }
+
+.field { display: flex; flex-direction: column; gap: 0.3rem; }
+.field.inline { flex-direction: row; align-items: center; gap: 0.6rem; }
+/* `flex-start`, not `center`: a control centred against its whole label drifts
+   down as the label wraps, so the four options of one radio group sat at three
+   different heights the moment two of the descriptions ran to a second line.
+   Aligning to the top puts every control on its own first line. The margin is
+   what `center` was doing usefully — optically centring the box on that line
+   rather than hanging it off the cap height. */
+.checkbox-field { flex-direction: row; align-items: flex-start; gap: 0.5rem; }
+
+/* A row of choices, as opposed to a row of pills — which is what `.row` is for,
+   and why its `center` is right there and wrong here. Each label is as tall as
+   its own description, so centring them against the tallest one put the four
+   options of a radio group on two different lines. */
+.choice-row { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.4rem; }
+.choice-row > .checkbox-field { flex: 1 1 12rem; }
+.checkbox-field input { margin-top: 0.2rem; flex: none; }
+.label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
+.input, .select, .textarea {
+  font: inherit; color: var(--text); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; padding: 0.55rem 0.65rem;
+  width: 100%;
+}
+.input:focus, .select:focus, .textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.textarea { resize: vertical; font-family: inherit; }
+.fieldset { border: 1px dashed var(--border); border-radius: 8px; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.7rem; margin: 0; }
+
+.chip-group { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.chip {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  font-size: 0.78rem; padding: 0.3rem 0.6rem; border: 1px solid var(--border); border-radius: 999px;
+  cursor: pointer; user-select: none; background: var(--surface);
+}
+.chip:has(input:checked) { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+.chip input { margin: 0; }
+
+.btn {
+  font: inherit; font-weight: 600; font-size: 0.88rem;
+  border-radius: 8px; padding: 0.6rem 1rem; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer;
+  min-height: 40px;
+  /* Some buttons are links — "open the problem" genuinely navigates — and
+     without this they arrive underlined and in link blue, looking like a
+     different kind of control than the buttons beside them. */
+  display: inline-flex; align-items: center; justify-content: center;
+  text-decoration: none;
+}
+a.btn, a.btn:hover { color: var(--text); }
+a.btn-primary { color: var(--accent-contrast); }
+.btn:hover { border-color: var(--accent); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
+.btn-primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+.btn-ghost { background: transparent; }
+.btn-sm { padding: 0.4rem 0.7rem; font-size: 0.78rem; min-height: 34px; }
+.file-btn { position: relative; }
+
+/* The setup and conflict screens render with no nav, so `main` keeps whatever
+   width the last view asked for — a connect form stretched to 1120px reads
+   like a table. This is the one card on screen; it sets its own measure. */
+.setup-card { max-width: 640px; margin-inline: auto; }
+/* The first-screen pitch: tight spacing so the form stays near the top of a phone screen. */
+.pitch { margin-bottom: 1rem; }
+.pitch p { margin: 0.25rem 0; }
+.setup-choices { display: flex; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+.setup-choices .small { margin: 0 0 0.8rem; }
+
+ol.setup-steps { padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+
+.banner { border-left: 4px solid var(--border); }
+.banner-warn { border-left-color: var(--warn); }
+.banner-bad { border-left-color: var(--bad); }
+
+.mock-timer {
+  font-family: var(--font-mono); font-size: 3rem; font-weight: 700;
+  text-align: center; padding: 1rem 0; font-variant-numeric: tabular-nums;
+}
+.mock-timer.overtime { color: var(--bad); }
+.checklist li { padding: 0.35rem 0; }
+/* The box is one flex item and everything said about it is the other, so a
+   name and its description flow as one paragraph. Left as bare text nodes they
+   were two items that each wrapped at their own width, and the design
+   session's component list — a name plus a sentence on every row — came out as
+   nine rows whose descriptions started at nine different places.
+   flex-start rather than center, because a row that wraps should start level
+   with its box instead of straddling it. */
+.checklist label { display: flex; align-items: flex-start; gap: 0.5rem; }
+.checklist label input { flex: none; margin-top: 0.2rem; }
+
+#toast {
+  position: fixed; left: 50%; bottom: 1.2rem; transform: translate(-50%, 12px);
+  background: var(--text); color: var(--bg);
+  padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.85rem;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- Section index (chapter table of contents) ---------- */
+.index-intro { margin-bottom: 0; }
+.index-intro h2 { margin-bottom: 0.25rem; }
+.index-intro p { margin: 0; }
+.index-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.index-card {
+  /* Flex, not block, because these are <button>s: a button centres its content
+     inside its box, and a grid stretches every card to the tallest one. So a
+     card whose description runs to three lines sat 10px lower than its
+     four-line neighbour, and a row of headings that should read as one line
+     didn't. Flex column lays them out from the top instead. */
+  display: flex; flex-direction: column; align-items: stretch;
+  width: 100%; text-align: left; cursor: pointer;
+  font: inherit; color: inherit;
+}
+.index-card:hover { border-color: var(--accent); }
+.index-card h3 { margin: 0 0 0.4rem; font-size: 1rem; }
+.index-card p { margin: 0; }
+
+/* ---------- Plant ---------- */
+.plant-card {
+  display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap;
+}
+.plant-illustration { display: block; flex: none; }
+.plant-sway {
+  animation: plant-sway var(--plant-sway-duration, 4s) ease-in-out infinite;
+  transform-origin: 100px 182px;
+}
+@keyframes plant-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+.plant-vitality-stressed .plant-illustration { filter: saturate(0.8); }
+.plant-vitality-wilting .plant-illustration { filter: saturate(0.55) brightness(0.94); }
+/* A leaf on the soil is a past event, not a live part of the plant — it reads
+   as one by sitting back from the drawing rather than swaying with it. */
+.plant-fallen { opacity: 0.85; }
+.plant-info { flex: 1; min-width: 220px; }
+.plant-stage-row { display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.3rem; }
+.plant-stage-name { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.01em; }
+.plant-vitality-label { font-size: 0.8rem; font-weight: 600; padding: 0.15rem 0.55rem; border-radius: 999px; }
+.plant-vitality-label.thriving { background: var(--good-bg); color: var(--good); }
+.plant-vitality-label.steady { background: var(--surface-alt); color: var(--text-muted); }
+.plant-vitality-label.stressed { background: var(--warn-bg); color: var(--warn); }
+.plant-vitality-label.wilting { background: var(--bad-bg); color: var(--bad); }
+.plant-signals { list-style: none; margin: 0.5rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.82rem; color: var(--text-muted); }
+.plant-signals li::before { content: "· "; }
+.plant-mini { vertical-align: middle; }
+.plant-mini .plant-sway { animation-duration: 5s; }
+.plant-toast-row { display: flex; align-items: center; gap: 0.5rem; }
+
+/* ---------- Diagrams ---------- */
+.diagram {
+  border: 1px solid var(--border); border-radius: 10px; padding: 0.85rem;
+  background: var(--surface-alt); margin: 0.75rem 0;
+}
+.diagram-title { font-weight: 650; font-size: 0.88rem; margin: 0 0 0.5rem; }
+.diagram-canvas { overflow-x: auto; }
+.diagram-svg { display: block; min-width: 260px; }
+.diagram-caption {
+  margin: 0.6rem 0 0; font-size: 0.85rem; color: var(--text); min-height: 2.4em;
+}
+.diagram-controls { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+.diagram-btn {
+  font: inherit; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border);
+  border-radius: 7px; padding: 0.3rem 0.6rem; min-width: 2.2rem;
+}
+.diagram-btn:hover { border-color: var(--accent); }
+.diagram-btn-play { min-width: 2.4rem; }
+.diagram-dots { display: flex; gap: 0.3rem; margin-left: auto; }
+.diagram-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border); }
+.diagram-dot.active { background: var(--accent); }
+
+.diagram-box {
+  fill: var(--surface); stroke: var(--border); stroke-width: 1.5;
+  transition: fill 0.3s ease, stroke 0.3s ease;
+}
+.diagram-box-text { fill: var(--text); font-size: 15px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.diagram-box-text-sm { font-size: 12px; }
+.diagram-box-highlight { fill: var(--good-bg); stroke: var(--good); }
+.diagram-box-active { fill: var(--accent); stroke: var(--accent-strong); }
+.diagram-box-active + text, g:has(> .diagram-box-active) .diagram-box-text { fill: var(--accent-contrast); }
+.diagram-box-dim { opacity: 0.35; }
+.diagram-box-source { stroke-dasharray: 2 2; }
+
+.diagram-pointer { transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0; }
+.diagram-pointer-label { font-size: 11px; font-weight: 700; }
+
+.diagram-stack-item { animation: diagram-pop-in 0.3s ease; }
+@keyframes diagram-pop-in {
+  from { transform: translate(4px, 20px); opacity: 0; }
+  to { opacity: 1; }
+}
+
+.diagram-axis-label { font-size: 10px; fill: var(--text-muted); }
+
+.diagram-node { fill: var(--surface); stroke: var(--border); stroke-width: 1.6; transition: fill 0.3s, stroke 0.3s; }
+.diagram-node-text { fill: var(--text); font-size: 11px; font-weight: 700; }
+.diagram-node-active { fill: var(--accent); stroke: var(--accent-strong); }
+.diagram-node-active ~ .diagram-node-text, g:has(> .diagram-node-active) .diagram-node-text { fill: var(--accent-contrast); }
+.diagram-node-done { fill: var(--good-bg); stroke: var(--good); }
+.diagram-edge { stroke: var(--border); stroke-width: 1.6; transition: stroke 0.3s, stroke-width 0.3s; }
+.diagram-edge-active { stroke: var(--accent); stroke-width: 2.6; }
+.diagram-edge-done { stroke: var(--good); stroke-width: 2.2; }
+.diagram-edge-label { font-size: 9px; fill: var(--text-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .diagram-pointer, .diagram-box, .diagram-node, .diagram-edge { transition: none; }
+  .diagram-stack-item { animation: none; }
+}
+
+/* ---------- Icons & pattern identity ---------- */
+.pattern-icon { display: inline-flex; color: var(--accent); flex: none; }
+.pill-icon { display: inline-flex; align-items: center; gap: 0.3rem; }
+.table-row-link { cursor: pointer; }
+.table-row-link:hover td { background: var(--surface-alt); }
+.topic-index-card { display: flex; flex-direction: column; gap: 0.4rem; }
+.topic-index-icon { display: inline-flex; color: var(--accent); flex: none; }
+.topic-index-icon-lg { padding: 0.5rem; background: var(--surface-alt); border-radius: 10px; }
+.topic-detail-header { margin-bottom: 0.75rem; }
+.topic-hook {
+  font-size: 1.05rem; font-weight: 550; line-height: 1.4; margin: 0 0 0.75rem;
+  padding-left: 0.75rem; border-left: 3px solid var(--accent);
+}
+.nav-icon-label { display: inline-flex; align-items: center; gap: 0.4rem; }
+
+/* ---------- Session (Workspace / Reflect / Warmup) ---------- */
+.session-cta-card { border-color: var(--accent); }
+.session-cta-row { flex-wrap: wrap; gap: 0.75rem; }
+/* The pre-start screen is a reading screen — you're deciding whether to start
+   the clock, not working — so it keeps a comfortable column. The live
+   workspace below is the opposite and takes the whole window. */
+.session-card { max-width: 720px; margin: 0 auto; }
+.session-problem-title { margin-top: 0.3rem; }
+
+/* ---------- Live workspace ----------
+
+   Three panes — statement, code, whiteboard — sized by fractions that
+   js/split-pane.js writes onto grid-template-columns as the user drags. The
+   whole thing is pinned to the viewport rather than scrolling with the page:
+   during a session the workspace IS the page, and an editor that scrolls out
+   of view while you're typing in it is worse than a short one.
+
+   100dvh, not 100vh: on mobile Safari the URL bar is included in vh, so the
+   submit row sat permanently under the bottom chrome. */
+.ws {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--chrome-height, 0px));
+  overflow: hidden;
+}
+.ws-bar {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: 0.6rem var(--page-pad);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.ws-bar-id { min-width: 0; flex: 1 1 16rem; }
+
+/* A mock's clock runs down, and the last stretch should feel different from
+   the middle — that pressure is the thing being practised. */
+.clock-urgent { color: var(--warn); }
+.clock-overrun { color: var(--bad); }
+
+.mock-phase {
+  display: flex; flex-direction: column; gap: 0.1rem;
+  padding: 0.3rem 0.7rem; border-left: 3px solid var(--warn);
+  max-width: 24rem;
+}
+/* It is filled by the tick, which has not run yet on a first render and never
+   runs at all on the watcher's page until somebody connects. Without this the
+   rule that marks the phase is drawn with no phase beside it — an orange tick
+   floating in the header. */
+.mock-phase:empty { display: none; }
+.mock-phase-label {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--warn);
+}
+.mock-phase-prompt { font-size: 0.8rem; color: var(--text-muted); }
+.ws-bar-id .session-problem-title { font-size: 1.05rem; margin: 0.2rem 0 0; }
+.ws-bar-actions { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-left: auto; }
+.ws-bar .session-clock { font-size: 1.5rem; }
+
+.ws-panes {
+  flex: 1;
+  display: grid;
+  min-height: 0;   /* without this a grid child refuses to shrink and the row overflows */
+  background: var(--bg);
+  padding-inline: 0.5rem;
+}
+.ws-pane {
+  display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 0.5rem 0;
+  overflow: hidden;
+}
+.ws-pane-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-alt);
+  flex: 0 0 auto;
+}
+.ws-pane-body { flex: 1; min-height: 0; overflow: auto; padding: 0.7rem 0.8rem; }
+/* The editor and the board manage their own padding and must fill the pane. */
+.ws-pane-body-flush { padding: 0; display: flex; flex-direction: column; }
+
+.ws-splitter {
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+}
+/* The hit area is the full 8px track, but only a hairline is drawn — a thick
+   visible bar between every pane turns the workspace into a grid of boxes. */
+.ws-splitter::after {
+  content: ""; position: absolute; inset-block: 0; left: 50%;
+  width: 1px; transform: translateX(-50%);
+  background: var(--border);
+}
+.ws-splitter:hover::after, .ws-splitter.dragging::after, .ws-splitter:focus-visible::after {
+  width: 3px; background: var(--accent);
+}
+.ws-splitter:focus-visible { outline: none; }
+
+.code-editor-fill { flex: 1; min-height: 0; border: none; border-radius: 0; }
+/* Both classes are on the same element, and `.code-editor-host .CodeMirror`
+   sets a fixed 220px further down this file. At equal specificity that one
+   would win on source order and the editor would keep its short default height
+   inside a full-height pane, so this deliberately qualifies with both. */
+.code-editor-host.code-editor-fill .CodeMirror { height: 100%; }
+.ws-prior-code {
+  flex: 0 0 auto; max-height: 40%; overflow: auto;
+  border-top: 1px solid var(--border); padding: 0.5rem 0.8rem;
+}
+.ws-prior-code summary { cursor: pointer; }
+.ws-checklist { flex: 0 0 auto; border-top: 1px solid var(--border); padding: 0.6rem 0.8rem; }
+
+.ws-statement { white-space: pre-wrap; font-size: 0.9rem; line-height: 1.55; }
+.ws-statement-empty { display: flex; flex-direction: column; gap: 0.6rem; align-items: flex-start; }
+.ws-statement-input { width: 100%; font-family: var(--font-mono); font-size: 0.82rem; }
+.select-xs { padding: 0.15rem 0.4rem; font-size: 0.78rem; width: auto; }
+.btn-xs { padding: 0.15rem 0.5rem; font-size: 0.75rem; min-height: 0; }
+
+/* The standalone Whiteboard page sizes its canvas to a fixed 360px, which is
+   right for a scratchpad sitting in a column of cards. Where the board is a
+   whole pane — the coding workspace and the design session — it fills the
+   height it has been given instead.
+   One rule for both, because there were two and they drifted: the design
+   session's copy gave the canvas `height: 100%` of the host without making the
+   host a column, so the toolbar and a full-height canvas together overflowed
+   the pane. The pane scrolls, so the first stroke near the top scrolled the
+   toolbar out of sight and there was no way to change tool or colour again. */
+.board-host { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0.5rem; }
+.board-host .wb-stage { flex: 1; min-height: 0; }
+
+/* Side-by-side panes need width. Below this the workspace stacks: the statement
+   and code become full-width rows you scroll between, and dragging a splitter
+   sideways stops making sense, so the splitters go away entirely. */
+@media (max-width: 860px) {
+  .ws { height: auto; overflow: visible; }
+  /* split-pane.js writes the grid template as an inline style, which only an
+     !important can override. Stacked, there are no columns left to size. */
+  .ws-panes { grid-template-columns: 1fr !important; padding-inline: 0; }
+  .ws-splitter { display: none; }
+  .ws-pane { margin: 0.4rem var(--page-pad); }
+  .ws-pane-body { max-height: 70vh; }
+  /* Both class names, to outrank .code-editor-host.code-editor-fill, which
+     sizes the editor to its pane on a wide screen. Stacked, the pane has no
+     height of its own to fill, so height:100% collapsed the editor to 28px —
+     a code pane you cannot type in. It gets a real height from the viewport
+     here instead. */
+  .code-editor-host.code-editor-fill .CodeMirror { height: 55vh; }
+  /* Once stacked both panes are auto-height, and without a floor the statement
+     takes the column and leaves the editor a sliver. */
+  #ws-pane-code .ws-pane-body { min-height: 55vh; }
+  #ws-pane-statement .ws-pane-body { max-height: 40vh; }
+  .board-host { min-height: 50vh; }
+}
+.session-clock-group { display: flex; flex-direction: column; gap: 0.1rem; }
+.session-clock {
+  font-family: var(--font-mono); font-size: 2rem; font-weight: 700;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+/* Quiet on purpose: the question's clock is the one being worked to, and this
+   is the ceiling behind it. It should be readable in a glance down, not
+   competing with the number above it. */
+.session-day {
+  font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+  white-space: nowrap;
+}
+.session-exit {
+  background: transparent; color: var(--bad); border-color: transparent;
+  font-weight: 700;
+}
+.session-nav-label { font-weight: 650; color: var(--text-muted); font-size: 0.85rem; }
+.code-editor-tall .CodeMirror { height: 320px; }
+.pattern-reveal { margin-top: 0.6rem; padding: 0.75rem; border-radius: 8px; background: var(--surface-alt); }
+.pattern-reveal p { margin: 0 0 0.4rem; font-size: 0.88rem; }
+.pattern-reveal p:last-child { margin-bottom: 0; }
+
+/* ---------- Heatmap, sparkline, ring, outcome glyphs, week strip ---------- */
+.heatmap { display: block; }
+/* Only the days with something in them are interactive, so only those get the
+   affordance. */
+.heat-cell { cursor: pointer; }
+.heat-cell:hover { stroke: var(--accent); stroke-width: 1.5; }
+.heat-cell:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sparkline { display: block; }
+.sparkline polyline { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ring circle:nth-child(2) { transition: stroke-dashoffset 0.4s ease; }
+.ring-label { font-size: 11px; font-weight: 700; fill: var(--text); font-variant-numeric: tabular-nums; }
+.outcome-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 1.15em; height: 1.15em; border-radius: 50%; font-size: 0.72rem; font-weight: 700;
+  flex: none;
+}
+.outcome-good { background: var(--good-bg); color: var(--good); }
+.outcome-warn { background: var(--warn-bg); color: var(--warn); }
+.outcome-bad { background: var(--bad-bg); color: var(--bad); }
+.week-strip { display: block; }
+/* `auto` rather than a fixed gap: the stat is the last line of a card whose
+   height the tallest sibling decides, so it belongs against the bottom edge
+   where every card's stat lines up, not trailing whatever text precedes it. */
+.index-card-stat { font-size: 0.76rem; font-weight: 700; color: var(--accent); margin-top: auto; padding-top: 0.3rem; }
+.backlog-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; margin: 0.5rem 0; background: var(--surface-alt); }
+.backlog-seg { height: 100%; }
+.backlog-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+.backlog-legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 0.3rem; vertical-align: middle; background: var(--_c, var(--text-muted)); }
+
+/* ---------- Topics ---------- */
+.topic-card summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between;
+  gap: 0.5rem; font-weight: 650; font-size: 1.05rem;
+}
+.topic-card summary::-webkit-details-marker { display: none; }
+.topic-card summary::before { content: "▸"; color: var(--text-muted); margin-right: 0.5rem; font-size: 0.8em; }
+.topic-card[open] summary::before { content: "▾"; }
+.topic-card[open] summary { margin-bottom: 0.75rem; }
+.topic-title { flex: 1; }
+.tight-list { margin: 0 0 0.6rem; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.25rem; }
+.resource-list { list-style: none; padding: 0; margin: 0 0 0.6rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.resource-list li { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.resource-form { flex-direction: row; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem; }
+.resource-form .input { flex: 1; min-width: 10rem; width: auto; }
+.btn-icon {
+  background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 1.1rem; line-height: 1; padding: 0.1rem 0.4rem; border-radius: 4px;
+}
+.btn-icon:hover { color: var(--bad); background: var(--bad-bg); }
+
+/* ---------- Code editor ---------- */
+.code-editor-host { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.code-editor-host .CodeMirror { height: 220px; font-family: var(--font-mono); font-size: 0.85rem; }
+.code-view .CodeMirror { height: auto; max-height: 320px; }
+.code-view { margin-top: 0.5rem; }
+/* CodeMirror injects its own stylesheet at runtime, after this one, so an
+   equal-specificity override here would lose the cascade — !important is
+   deliberate: this is retinting a third-party default, not app styling. */
+.CodeMirror { background: var(--surface) !important; color: var(--text) !important; }
+.CodeMirror-gutters { background: var(--surface-alt) !important; border-right: 1px solid var(--border) !important; }
+.CodeMirror-linenumber { color: var(--text-muted) !important; }
+.CodeMirror-cursor { border-left-color: var(--text) !important; }
+.CodeMirror-selected { background: color-mix(in srgb, var(--accent) 25%, transparent) !important; }
+.cm-s-default .cm-keyword { color: var(--accent) !important; }
+.cm-s-default .cm-string, .cm-s-default .cm-string-2 { color: var(--good) !important; }
+.cm-s-default .cm-comment { color: var(--text-muted) !important; font-style: italic; }
+.cm-s-default .cm-number { color: var(--warn) !important; }
+.cm-s-default .cm-def, .cm-s-default .cm-variable-2 { color: var(--accent-strong) !important; }
+.cm-s-default .cm-atom { color: var(--warn) !important; }
+
+/* ---------- Quiz ---------- */
+.quiz-prompt {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin: 0.75rem 0;
+  background: var(--surface-alt);
+}
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 0.75rem; }
+@media (max-width: 480px) { .quiz-options { grid-template-columns: 1fr; } }
+.quiz-option {
+  font: inherit; padding: 0.7rem; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer; text-align: left;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+/* Nothing in here styled a disabled button, so one rendered identically to a
+   live one — full opacity, normal cursor, and no response to a click. That is
+   how the Reflect screen's save button became a bright teal control that
+   silently did nothing. Any disabled control now says so. */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.btn:disabled:hover { filter: none; }
+
+/* Flashed when a submit is refused because this step still needs an answer.
+   Twice, then it settles — enough to catch the eye without nagging. */
+@keyframes needs-answer-flash {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50%      { box-shadow: 0 0 0 3px var(--warn); }
+}
+.needs-answer {
+  border-radius: var(--radius);
+  animation: needs-answer-flash 700ms ease-in-out 2;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* A steady outline instead of a flash — the point is to be noticed, not to move. */
+  .needs-answer { animation: none; box-shadow: 0 0 0 2px var(--warn); }
+}
+
+.quiz-option:hover:not(:disabled) { border-color: var(--accent); }
+.quiz-option:disabled { cursor: default; }
+.quiz-option.correct { border-color: var(--good); background: var(--good-bg); color: var(--good); }
+.quiz-option.incorrect { border-color: var(--bad); background: var(--bad-bg); color: var(--bad); }
+.quiz-feedback { margin-top: 0.25rem; }
+
+/* ---------- Whiteboard ---------- */
+.whiteboard-toolbar { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
+.wb-colors { display: flex; gap: 0.4rem; }
+.wb-color {
+  width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; padding: 0;
+}
+/* The ring can't be drawn in --text: the first swatch is #e7efeb, which is
+   --text, so the selected colour was the one you couldn't tell was selected.
+   The border becomes a gap in the surface colour and the ring sits outside it,
+   which separates ring from fill whatever the fill happens to be — including
+   the swatch that is the accent. */
+.wb-color.active {
+  border-color: var(--surface);
+  outline: 2px solid var(--accent);
+}
+.wb-width-label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-muted); }
+.wb-sep { width: 1px; align-self: stretch; background: var(--border); margin-inline: 0.1rem; }
+.wb-spacer { flex: 1 1 0; min-width: 0; }
+
+/* Type size, as two buttons and a number rather than a slider. A slider is the
+   wrong control for a value you know — you want 24, not "somewhere around
+   here" — and on a tablet it is a 4px target being aimed at with a finger. */
+.wb-size { display: flex; align-items: center; gap: 2px; }
+.wb-size-input {
+  width: 3.1rem; text-align: center;
+  font: inherit; font-size: 0.8rem; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 6px;
+  padding: 0.2rem 0.25rem;
+}
+.wb-step {
+  min-width: 1.9rem; height: 1.9rem; padding: 0 0.35rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text-muted);
+  font: inherit; font-size: 0.78rem; font-weight: 700; line-height: 1; cursor: pointer;
+}
+.wb-step:hover { color: var(--text); border-color: var(--accent); }
+
+/* The canvas and the two things laid over it — the text editor and the zoom
+   readout — share one positioned box, because both are placed in the canvas's
+   own coordinates. */
+/* Clipped, because the editor is a real DOM element laid on top: a paragraph
+   typed near the bottom edge would otherwise hang out of the board and over
+   whatever the page puts underneath it. The canvas clips itself; this is for
+   the things laid over it. */
+.wb-stage { position: relative; display: flex; min-height: 22rem; min-width: 0; overflow: hidden; border-radius: 8px; }
+.wb-stage > .whiteboard-canvas { flex: 1; width: auto; height: auto; min-width: 0; min-height: 0; }
+.whiteboard-canvas {
+  width: 100%; display: block; border: 1px solid var(--border); border-radius: 8px;
+  touch-action: none; cursor: crosshair;
+}
+
+/* Laid exactly over the glyphs it stands in for, at the size they will be
+   drawn, so committing does not make the words jump. Everything that would
+   make it look like a form field is taken off: while you are typing it has to
+   look like the drawing, not like a dialog in front of it. The one ring is
+   there so an empty box is still visibly somewhere. */
+.wb-text-editor {
+  position: absolute; z-index: 2;
+  margin: 0; padding: 0; border: 0; outline: none;
+  background: transparent; resize: none; overflow: hidden;
+  white-space: pre-wrap; overflow-wrap: break-word;
+  box-shadow: 0 0 0 1px var(--accent);
+  border-radius: 2px;
+}
+
+.wb-zoom {
+  position: absolute; right: 0.6rem; bottom: 0.6rem; z-index: 3;
+  display: flex; align-items: center; gap: 2px;
+  padding: 3px; border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(3px);
+}
+.wb-zoom .wb-step { border-color: transparent; background: transparent; }
+.wb-zoom-level {
+  min-width: 3.6rem; height: 1.9rem; padding: 0 0.4rem;
+  border: 1px solid transparent; border-radius: 999px;
+  background: transparent; color: var(--text-muted);
+  font: inherit; font-size: 0.74rem; font-weight: 700;
+  font-variant-numeric: tabular-nums; cursor: pointer;
+}
+.wb-zoom-level:hover { color: var(--text); border-color: var(--border); }
+.wb-help {
+  position: absolute; inset: 0.6rem; z-index: 4;
+  overflow: auto; padding: 0.9rem 1rem;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  backdrop-filter: blur(4px);
+}
+.wb-help[hidden] { display: none; }
+.wb-help-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+.wb-help-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 0.9rem 1.4rem; }
+.wb-help-grid h4 { margin: 0 0 0.35rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+.wb-help-grid dl { display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.7rem; margin: 0; align-items: baseline; }
+.wb-help-grid dt { margin: 0; white-space: nowrap; }
+.wb-help-grid dd { margin: 0; font-size: 0.84rem; color: var(--text-muted); }
+.wb-help-grid kbd { font-size: 0.72rem; white-space: pre; }
+.whiteboard-thumb-host img { max-width: 100%; border-radius: 6px; margin-top: 0.5rem; border: 1px solid var(--border); }
+
+
+/* ---------- Analyze: pattern prediction and its explanation ---------- */
+
+.pred-list { list-style: none; margin: 0.5rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.3rem; }
+.pred-row {
+  display: grid; grid-template-columns: auto 1fr 8rem 3rem auto auto; gap: 0.6rem;
+  align-items: center; width: 100%; padding: 0.45rem 0.55rem; border-radius: 8px;
+  background: none; border: 1px solid transparent; color: var(--text);
+  font: inherit; text-align: left; cursor: pointer;
+}
+.pred-row:hover { background: var(--surface-alt); }
+.pred-row.selected { border-color: var(--accent); background: var(--surface-alt); }
+.pred-name { font-weight: 600; }
+.pred-bar { height: 7px; border-radius: 4px; background: var(--border); overflow: hidden; }
+.pred-fill { display: block; height: 100%; background: var(--text-muted); border-radius: 4px; }
+.pred-fill.confident { background: var(--accent); }
+/* The lower tier: right more often than not, but not as sure. Warn rather
+   than accent, so the eye separates the two without reading the badge. */
+.pred-fill.likely { background: var(--warn); }
+.pred-pct { font-variant-numeric: tabular-nums; text-align: right; color: var(--text-muted); }
+
+.small-heading { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--text-muted); margin: 1rem 0 0.4rem; }
+
+.region-bars, .evidence-list, .implication-list { list-style: none; margin: 0; padding: 0; }
+.region-bars li { display: grid; grid-template-columns: 6.5rem 1fr 3.5rem; gap: 0.6rem;
+  align-items: center; margin-bottom: 0.3rem; }
+.region-name { text-transform: capitalize; color: var(--text-muted); font-size: 0.85rem; }
+.region-bar { height: 9px; border-radius: 4px; background: var(--border); overflow: hidden; }
+.region-fill { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.region-fill.against { background: var(--bad); }
+.region-val { font-variant-numeric: tabular-nums; font-size: 0.85rem; text-align: right; color: var(--text-muted); }
+
+.implication-list li { font-size: 0.9rem; margin-bottom: 0.25rem; padding-left: 0.9rem; position: relative; }
+.implication-list li::before { content: "→"; position: absolute; left: 0; color: var(--accent); }
+
+.evidence-list li { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.25rem; }
+.evidence-term { font-family: var(--font-mono); font-size: 0.85rem;
+  padding: 0.05rem 0.35rem; border-radius: 4px; background: var(--surface-alt); }
+.evidence-term.for { box-shadow: inset 2px 0 0 var(--accent); }
+.evidence-term.against { box-shadow: inset 2px 0 0 var(--bad); }
+.evidence-weight { font-variant-numeric: tabular-nums; font-size: 0.8rem; color: var(--text-muted); }
+
+.counterfactual { margin-top: 1rem; padding: 0.7rem 0.85rem; border-radius: 8px;
+  background: var(--surface-alt); border-left: 3px solid var(--warn); }
+.counterfactual code { font-size: 0.85rem; }
+
+/* The pasted problem, shaded by how much each phrase drove the prediction.
+   pre-wrap keeps the original line breaks, which carry the Input/Output/
+   Constraints structure the explanation refers to. */
+.analyze-text { white-space: pre-wrap; line-height: 1.6; font-size: 0.92rem;
+  max-height: 32rem; overflow-y: auto; padding: 0.85rem; border-radius: 8px;
+  background: var(--surface-alt); border: 1px solid var(--border); }
+.hl { border-radius: 3px; background: none; color: inherit; padding: 0.02em 0; }
+.hl-1 { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.hl-2 { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+.hl-3 { background: color-mix(in srgb, var(--accent) 44%, transparent); }
+.hl-4 { background: color-mix(in srgb, var(--accent) 62%, transparent); font-weight: 600; }
+.hl-legend { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.6rem; }
+.hl-legend .hl { padding: 0.1rem 0.5rem; border-radius: 3px; }
+
+@media (max-width: 640px) {
+  .pred-row { grid-template-columns: auto 1fr 3rem; row-gap: 0.3rem; }
+  .pred-bar { grid-column: 1 / -1; }
+}
+
+/* ---------- Problem bank ---------- */
+
+.bank-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem; margin-top: 0.75rem; }
+@media (max-width: 560px) { .bank-filters { grid-template-columns: 1fr; } }
+
+
+/* Opening the problem is literally step one of a session, so it reads as an
+   ordered list with the link as the first action rather than a sentence
+   mentioning a link that may not exist. */
+.session-steps {
+  margin: 0.25rem 0 0.75rem;
+  padding-left: 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.session-steps li { margin-bottom: 0.3rem; }
+.session-steps li:first-child { margin-bottom: 0.5rem; }
+
+/* The dashboard's one line of trajectory. Coloured by direction, but quietly —
+   a bad week is information, not a failure notice. */
+.trend-line { font-size: 0.85rem; color: var(--text-muted); }
+.trend-arrow { font-weight: 700; }
+.trend-line.up .trend-arrow { color: var(--good); }
+.trend-line.down .trend-arrow { color: var(--warn); }
+
+/* Settings forms are a field and a button, not a stacked column — the shared
+   .form class made a single Save button span the full card width, which read
+   as a much more significant action than changing one number. */
+.settings-form {
+  display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap;
+}
+
+/* The moment the plant advances a stage. It settles rather than bounces — this
+   marks weeks of consistency, and a springy celebration would read as a game
+   reward rather than something earned slowly. */
+@keyframes plant-grow {
+  0%   { transform: scale(0.82) translateY(4px); opacity: 0.6; }
+  55%  { transform: scale(1.06) translateY(-2px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.plant-growing {
+  animation: plant-grow 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: 50% 90%;  /* rooted in the pot, so it grows upward */
+}
+
+/* The full growth path with the current stage marked. Deliberately small and
+   low-contrast: it's a horizon, not a progress bar to grind against. */
+.growth-path {
+  list-style: none; margin: 0.75rem 0 0; padding: 0;
+  display: flex; align-items: flex-end; gap: 0.15rem; flex-wrap: wrap;
+}
+.growth-step {
+  display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+  padding: 0.25rem 0.2rem; border-radius: 6px; min-width: 3.1rem;
+}
+.growth-step svg { display: block; }
+.growth-step-label {
+  font-size: 0.6rem; letter-spacing: 0.01em; color: var(--text-muted);
+  text-align: center; line-height: 1.15;
+}
+.growth-step.past { opacity: 0.55; }
+.growth-step.future { opacity: 0.3; }
+.growth-step.current {
+  background: var(--surface-alt);
+  outline: 1px solid var(--border);
+}
+.growth-step.current .growth-step-label { color: var(--text); font-weight: 650; }
+
+/* The two sides of a sync conflict, shown side by side so the choice is a
+   comparison rather than a guess. */
+.conflict-compare { margin-top: 0.75rem; }
+.conflict-side {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+}
+.conflict-side .small-heading { margin-top: 0; }
+.banner-good { background: var(--good-bg); color: var(--good); border-radius: 8px; padding: 0.6rem 0.8rem; }
+
+/* ---------- Loading skeletons ---------- */
+
+/* Placeholders that occupy the same space the real content will, so a slow
+   fetch settles into place instead of shifting the page when it arrives. */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-alt) 25%, var(--border) 50%, var(--surface-alt) 75%);
+  background-size: 200% 100%;
+  border-radius: 5px;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+.skeleton-line { height: 0.75rem; margin: 0.45rem 0; }
+.skeleton-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  padding: 0.6rem 0; border-bottom: 1px solid var(--border);
+}
+.skeleton-row:last-child { border-bottom: none; }
+@keyframes skeleton-sweep {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* ---------- Progress charts ---------- */
+
+.chart-wrap { overflow-x: auto; }
+.chart { width: 100%; min-width: 22rem; height: auto; display: block; }
+.chart-label { font-size: 9px; fill: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* Volume is deliberately the least prominent chart on the page — it's context
+   for the other two, not a score to beat. */
+.volume-bars {
+  list-style: none; margin: 0.5rem 0 0; padding: 0;
+  display: flex; align-items: flex-end; gap: 0.35rem; height: 5.5rem;
+}
+.volume-bars li {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end; height: 100%; gap: 0.25rem;
+}
+.volume-bar {
+  width: 100%; max-width: 2.2rem; min-height: 2px;
+  height: var(--h);
+  border-radius: 3px 3px 0 0;
+  background: var(--accent);
+  opacity: 0.75;
+}
+.volume-bars li:hover .volume-bar { opacity: 1; }
+
+.mover-list { list-style: none; margin: 0; padding: 0; }
+.mover-list li {
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  padding: 0.4rem 0; border-bottom: 1px solid var(--border);
+}
+.mover-list li:last-child { border-bottom: none; }
+.mover-delta { font-variant-numeric: tabular-nums; font-weight: 650; font-size: 0.85rem; text-align: right; }
+.mover-delta.up { color: var(--good); }
+.mover-delta.down { color: var(--bad); }
+.mover-delta .muted { display: block; font-weight: 400; }
+
+/* ---------- Empty states ---------- */
+
+/* An empty section should say what belongs here, not just that nothing does.
+   Centred and quiet — it's an explanation, not an error. */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+.empty-state-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 0.15rem;
+  border-radius: 50%;
+  background: var(--surface-alt);
+  color: var(--text-muted);
+}
+.empty-state-headline { margin: 0; font-weight: 650; }
+.empty-state .muted { max-width: 34rem; margin: 0; }
+.empty-state .btn { margin-top: 0.5rem; }
+
+/* Icon-only controls in the topbar: quiet until reached for. */
+.topbar-icon-button {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; padding: 0;
+  border: 0; border-radius: 7px;
+  background: none; color: var(--text-muted); cursor: pointer;
+}
+.topbar-icon-button:hover { background: var(--surface-alt); color: var(--text); }
+
+.budget-warn { color: var(--warn); font-weight: 600; }
+.budget-over { color: var(--bad); font-weight: 700; }
+.day-ring { flex-wrap: nowrap; }
+.rec-focus { margin: 0.4rem 0 0; }
+.rec-problem { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; margin: 0.2rem 0 0.35rem; }
+.rec-focus .link-button { margin-left: 0.25rem; }
+.topic-focus { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+.day-ring-left { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text); }
+.day-ring.budget-warn .day-ring-left { color: var(--warn); }
+.day-ring.budget-over .day-ring-left { color: var(--bad); }
+
+/* A shortcut hint inside a button. Quiet enough not to compete with the label,
+   present enough to be discovered — a shortcut nobody knows about may as well
+   not exist. */
+.btn-kbd {
+  margin-left: 0.45rem;
+  font-family: var(--font-mono); font-size: 0.75em;
+  opacity: 0.7;
+}
+@media (pointer: coarse) {
+  /* No keyboard to press it with. */
+  .btn-kbd { display: none; }
+}
+
+.attempt-mini-list { list-style: none; margin: 0.75rem 0 0; padding: 0; }
+.attempt-mini-list li {
+  display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap;
+  padding: 0.35rem 0; border-bottom: 1px solid var(--border);
+}
+.attempt-mini-list li:last-child { border-bottom: none; }
+
+/* ---------- Problem history ---------- */
+
+/* A button that reads as a link: it navigates, so it should look like it does,
+   but it is not an href and must not behave like one. */
+.link-button {
+  border: 0; background: none; padding: 0;
+  font: inherit; color: inherit; font-weight: inherit;
+  text-align: left; cursor: pointer;
+  text-decoration: underline; text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+}
+.link-button:hover { text-decoration-color: var(--accent); }
+
+/* Progress: one row per week against the plan. A list, not a chart, so six
+   whole numbers stay readable as numbers. */
+.adherence-list { list-style: none; margin: 0.5rem 0; padding: 0; }
+.adherence-week {
+  display: grid; grid-template-columns: 1fr auto auto; gap: 0.75rem; align-items: center;
+  padding: 0.35rem 0; border-bottom: 1px solid var(--border);
+}
+.adherence-week:last-child { border-bottom: none; }
+
+.board-list { list-style: none; margin: 0; padding: 0; }
+.board-list li { padding: 0.4rem 0; border-bottom: 1px solid var(--border); }
+.board-list li:last-child { border-bottom: none; }
+
+.attempt-list { list-style: none; margin: 0; padding: 0; }
+.attempt-row { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+.attempt-row:last-child { border-bottom: none; }
+.attempt-row-editing { background: var(--surface-alt); border-radius: var(--radius); padding: 0.85rem; }
+.attempt-soul {
+  margin: 0.4rem 0 0; padding-left: 0.7rem;
+  border-left: 3px solid var(--accent);
+  font-size: 0.88rem; white-space: pre-wrap;
+}
+.attempt-code { margin-top: 0.5rem; }
+.attempt-code summary { cursor: pointer; }
+.code-view-pre {
+  margin: 0.4rem 0 0; padding: 0.6rem 0.7rem;
+  background: var(--surface-alt); border-radius: 8px;
+  font-family: var(--font-mono); font-size: 0.78rem;
+  overflow-x: auto; white-space: pre;
+}
+
+/* The undo affordance on a toast. Deliberately looks like a control rather
+   than part of the sentence — it is the only thing on screen that can take an
+   action back. */
+.toast-undo {
+  margin-left: 0.75rem;
+  border: 1px solid currentColor; border-radius: 999px;
+  background: none; color: inherit;
+  font: inherit; font-weight: 700; font-size: 0.8rem;
+  padding: 0.1rem 0.6rem; cursor: pointer;
+}
+
+/* ---------- Errors ----------
+
+   A banner rather than a toast, and it stays until dismissed. A message that
+   vanishes after two seconds is barely better than no message when the thing
+   it is explaining is why your work did not save. */
+.error-banner {
+  position: fixed;
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+  z-index: 300;
+  display: flex; align-items: flex-start; gap: 0.75rem;
+  max-width: min(36rem, calc(100vw - 2rem));
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--bad);
+  background: var(--bad-bg);
+  color: var(--bad);
+  font-size: 0.85rem; font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+.error-banner-dismiss {
+  flex: none;
+  border: 0; background: none; color: inherit;
+  font-size: 1.1rem; line-height: 1; cursor: pointer;
+  padding: 0 0.15rem;
+}
+.fault-list { list-style: none; margin: 0.5rem 0 0; padding: 0; font-size: 0.78rem; }
+.fault-list li {
+  padding: 0.4rem 0; border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono); color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+.fault-list li:last-child { border-bottom: none; }
+
+.plant-why { margin: 0.5rem 0; }
+.plant-why summary { cursor: pointer; }
+.plant-contributions { list-style: none; margin: 0.5rem 0 0; padding: 0; font-size: 0.82rem; }
+.plant-contributions li {
+  display: flex; justify-content: space-between; gap: 1rem;
+  padding: 0.25rem 0; border-bottom: 1px solid var(--border);
+}
+.plant-contributions li:last-child { border-bottom: none; }
+.contrib-delta { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--text-muted); }
+.contrib-delta.up { color: var(--good); }
+.contrib-delta.down { color: var(--bad); }
+.contrib-total { font-weight: 700; border-top: 1px solid var(--border); }
+.contrib-total .contrib-delta { color: var(--text); }
+
+/* ---------- First run ---------- */
+
+.welcome-card { max-width: 34rem; margin: 2rem auto; }
+.welcome-card h2 { margin: 0.6rem 0 0.5rem; font-size: 1.35rem; }
+.welcome-body { font-size: 1rem; line-height: 1.55; margin: 0; }
+.welcome-aside {
+  margin: 0.8rem 0 0; padding-left: 0.7rem;
+  border-left: 3px solid var(--accent);
+}
+.welcome-dots { display: flex; gap: 0.35rem; }
+.welcome-dot {
+  width: 22px; height: 3px; border-radius: 999px;
+  background: var(--border);
+}
+.welcome-dot.on { background: var(--accent); }
+
+/* ---------- Version ---------- */
+
+.version-card { border-color: var(--accent); }
+.version-number {
+  font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;
+  color: var(--accent); vertical-align: middle;
+  padding: 0.1rem 0.45rem; border-radius: 999px;
+  background: var(--surface-alt);
+}
+
+/* ---------- The standing plant ----------
+
+   Bottom-right on every page but Home, so the "how is today going" signal is
+   in view while working instead of a page away.
+
+   pointer-events: none is the important line. The user should never be able to
+   tap their way out of a session by catching this with a thumb — it is a
+   readout, not a control, and nothing about it is clickable or focusable. */
+.plant-widget {
+  position: fixed;
+  right: clamp(0.75rem, 2vw, 1.5rem);
+  bottom: clamp(0.75rem, 2vw, 1.5rem);
+  z-index: 60;
+  pointer-events: none;
+  user-select: none;
+  display: flex; align-items: center; justify-content: center;
+}
+/* Everything inside the panel is a fraction of --plant-size, so one number per
+   breakpoint scales the whole thing — box, plant, digits and button together.
+   Sizing each part independently drifted: the plant shrank on a phone while
+   the text stayed put and crowded it out. It lives on :root because `main`
+   needs it too, to reserve the height the panel floats over. */
+:root { --plant-size: 116px; }
+@media (min-width: 720px)  { :root { --plant-size: 152px; } }
+@media (min-width: 1100px) { :root { --plant-size: 184px; } }
+
+.plant-widget-inner {
+  /* Height is stated as well as width. aspect-ratio alone only sets the
+     *preferred* box: the plant SVG is 1.2x as tall as it is wide, and once it
+     plus the readout exceeded the width the box grew to fit and stopped being
+     square. A fixed height plus a plant that takes the room left over keeps it
+     square whatever is inside. */
+  width: var(--plant-size);
+  height: var(--plant-size);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  gap: calc(var(--plant-size) * 0.012);
+  padding: calc(var(--plant-size) * 0.05);
+  overflow: hidden;
+  border-radius: var(--radius);
+  /* Enough of a ground to stay legible over a whiteboard or an editor,
+     little enough to stay out of the way of them. */
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  backdrop-filter: blur(3px);
+}
+
+/* The plant takes every pixel the readout doesn't, which is what makes it fill
+   the box rather than float in the middle of it. */
+.plant-widget-art {
+  flex: 1; min-height: 0; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  /* The long duration matters: --pressure only changes once a second, so a
+     short transition finishes early and the next step lands as a visible jump.
+     At 1s each step runs straight into the next and the growth reads as
+     continuous. */
+  transform: scale(calc(1 + var(--pressure, 0) * 0.12));
+  transform-origin: bottom center;
+  transition: transform 1s linear, filter 1s linear;
+  filter: saturate(calc(1 + var(--pressure, 0) * 0.4));
+}
+/* width:auto so the SVG is bound by the height it's been given rather than by
+   the box's width — it's taller than it is wide, so height runs out first. */
+.plant-widget-art svg { width: auto; height: 100%; max-width: 100%; }
+
+.plant-widget-readout {
+  display: flex; align-items: center; justify-content: center;
+  gap: calc(var(--plant-size) * 0.04);
+  flex: none;
+}
+.plant-widget-clock {
+  font-family: var(--font-mono); font-weight: 700;
+  font-size: calc(var(--plant-size) * 0.155);
+  font-variant-numeric: tabular-nums; line-height: 1.05;
+  color: var(--text);
+}
+/* Which way the plant is going, stated rather than left to be inferred from a
+   slow scale change nobody is watching closely enough to catch. */
+.plant-widget-trend {
+  font-size: calc(var(--plant-size) * 0.085);
+  line-height: 1;
+}
+.plant-widget-trend[data-dir="up"] { color: var(--good); }
+.plant-widget-trend[data-dir="down"] { color: var(--bad); }
+.plant-widget-trend[data-dir="flat"] { color: var(--text-muted); }
+.plant-widget-note {
+  font-size: calc(var(--plant-size) * 0.072);
+  font-weight: 600; color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* The panel takes no pointer events; this takes them back. Pausing the day is
+   the one thing worth doing from the corner of any page, and unlike everything
+   else here it doesn't navigate anywhere. */
+.plant-widget-toggle {
+  pointer-events: auto;
+  width: calc(var(--plant-size) * 0.22);
+  height: calc(var(--plant-size) * 0.22);
+  padding: 0; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: 999px;
+  background: var(--surface); color: var(--text);
+  cursor: pointer;
+}
+.plant-widget-toggle:hover { color: var(--accent); border-color: var(--accent); }
+.plant-widget-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Play and pause drawn in CSS: two shapes, flipped on every toggle, and they
+   scale with the button rather than needing a second asset. */
+.plant-widget-toggle::before {
+  content: "";
+  width: 0; height: 0;
+  border-left: calc(var(--plant-size) * 0.07) solid currentColor;
+  border-block: calc(var(--plant-size) * 0.05) solid transparent;
+  margin-left: calc(var(--plant-size) * 0.015);   /* optically centres a triangle */
+}
+.plant-widget-toggle[data-running="true"]::before {
+  width: calc(var(--plant-size) * 0.07);
+  height: calc(var(--plant-size) * 0.09);
+  margin-left: 0;
+  border: none;
+  border-inline: calc(var(--plant-size) * 0.026) solid currentColor;
+  box-sizing: border-box;
+}
+
+/* Clicks pass through the panel, but the bottom of a long list would still
+   come to rest underneath it with no way to scroll further. Reserving the
+   height as page padding means the last row always clears it. The workspace is
+   excluded: it doesn't scroll, and padding its panes would shorten the editor
+   for no reason. */
+main:not(.page-full) { padding-bottom: calc(var(--plant-size) + 2rem); }
+
+/* The other half of the same reservation, and the half that was missing: the
+   panel occupies a column at the right edge as well as a strip at the bottom.
+   On a `page-wide` view the content is wider than the margin the viewport
+   leaves, so the panel sat on top of it — covering the Start button on every
+   refresher row it passed, and clipping the right-hand words of a paragraph on
+   Analyze. Clicks go through, so nothing was unreachable, but it was
+   unreadable, which for a readout of text is the same failure.
+   Only the intrusion is reserved: `100vw - page-max` is the room the centred
+   column already leaves, and where that is more than the panel needs — a
+   narrow page, or a wide screen — this subtracts to zero and changes nothing.
+   Below 1100px there is no spare width to give, and taking 150px from a phone
+   to protect a corner is the worse trade. */
+@media (min-width: 1100px) {
+  main:not(.page-full) {
+    padding-right: max(0px, calc(var(--plant-size) + 2rem
+                                 - (100vw - min(var(--page-max, 1120px), 100vw)) / 2));
+  }
+}
+
+/* In a session on a phone there is no spare corner — the editor runs to both
+   edges, and the panel ends up sitting on the code. It shrinks rather than
+   disappearing, because knowing you're past your budget matters most exactly
+   when you're head-down in a problem. */
+@media (max-width: 719px) {
+  main.page-full ~ .plant-widget { --plant-size: 88px; }
+  main.page-full ~ .plant-widget .plant-widget-note { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-widget-art { transition: none; }
+}
+
+/* ---------- Global search ---------- */
+
+/* Search sits in the middle of the header as a real input. It used to be an
+   icon that opened a modal over the page, which meant every lookup was a
+   context switch — and a modal is a heavy way to ask "where's that problem".
+   The results hang under the bar instead, so the app stays visible behind
+   them. */
+.topbar-search {
+  position: relative;
+  width: min(34rem, 42vw);
+}
+.search-input {
+  width: 100%;
+  font: inherit; font-size: 0.9rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--border); border-radius: 999px;
+  background: var(--surface-alt); color: var(--text);
+  outline: none;
+}
+.search-input:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.search-panel {
+  position: absolute; z-index: 220;
+  top: calc(100% + 0.4rem); left: 0; right: 0;
+  display: flex; flex-direction: column;
+  max-height: min(30rem, 70vh);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+}
+.search-results { overflow-y: auto; padding: 0.35rem; }
+.search-pager { display: inline-flex; align-items: center; gap: 0.35rem; }
+.search-pager .btn { line-height: 1; }
+.search-group {
+  display: flex; align-items: center; gap: 0.35rem;
+  margin: 0.5rem 0 0.2rem; padding: 0 0.5rem;
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-muted);
+}
+.search-hit {
+  display: flex; align-items: center; gap: 0.55rem;
+  width: 100%; padding: 0.5rem 0.6rem;
+  border: 0; border-radius: 7px; background: none; color: var(--text);
+  font: inherit; text-align: left; cursor: pointer;
+}
+.search-hit:hover { background: var(--surface-alt); }
+/* Selection is driven by the keyboard, so it needs to be obvious without a
+   cursor anywhere near it. */
+.search-hit.active { background: var(--accent); color: var(--accent-contrast); }
+.search-hit.active .muted { color: var(--accent-contrast); opacity: 0.8; }
+.search-hit-text { display: flex; flex-direction: column; min-width: 0; }
+.search-hit-title { font-weight: 600; }
+.search-hit-text .muted { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-empty { padding: 1.25rem 0.75rem; text-align: center; }
+.search-footer {
+  display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.7rem; border-top: 1px solid var(--border);
+  background: var(--surface-alt);
+}
+.search-footer kbd { margin-right: 0.15rem; }
+/* The key hints are the first thing worth dropping when the bar is narrow —
+   the counts and the pager are doing real work. */
+/* Below this the header can't hold three columns, so the bar drops to a full
+   width row of its own beneath the brand. */
+@media (max-width: 720px) {
+  .search-keys { display: none; }
+  .topbar { grid-template-columns: 1fr auto; }
+  .topbar-search { grid-column: 1 / -1; grid-row: 2; width: auto; }
+}
+
+/* ---------- Keyboard shortcuts ---------- */
+
+.shortcut-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3rem 1rem;
+  background: rgba(8, 14, 12, 0.55);
+  backdrop-filter: blur(2px);
+  overflow-y: auto;
+}
+.shortcut-panel {
+  width: min(30rem, 100%);
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+.shortcut-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.28rem 0;
+  font-size: 0.9rem;
+}
+.shortcut-keys { display: flex; gap: 0.25rem; }
+kbd {
+  display: inline-block;
+  min-width: 1.5rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--surface-alt);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-align: center;
+  color: var(--text);
+}
+
+/* A discoverability hint; the shortcut is useless if nobody learns it exists.
+   Hidden where there is no keyboard to press it with. */
+.shortcut-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  /* A <button> for keyboard and screen-reader reachability, but it should read
+     as a quiet hint rather than a control competing with the nav. */
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.shortcut-hint:hover { color: var(--text); }
+@media (pointer: coarse) { .shortcut-hint { display: none; } }
+
+/* ---------- Focus, skip link, screen-reader text ---------- */
+
+/* Focus was styled on buttons and inputs only, which left every other
+   interactive element — nav tabs, prediction rows, index cards, quiz options,
+   clickable table rows — with no visible focus at all. Keyboard users could
+   reach them and have no idea where they were. */
+.tab:focus-visible,
+.pred-row:focus-visible,
+.index-card:focus-visible,
+.quiz-option:focus-visible,
+.table-row-link:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible,
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+/* <main> only takes focus programmatically, via the skip link; showing a ring
+   around the whole page when it does would be noise. */
+#view-root:focus { outline: none; }
+
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-link:focus { top: 0.5rem; }
+
+/* Available to assistive technology, absent from the visual design. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Touch and small screens ---------- */
+
+/* Measured on a 390px viewport: 36 controls were under the 44px minimum for a
+   comfortable touch target, the smallest being a 13px checkbox. These rules are
+   scoped to coarse pointers so a mouse-driven desktop keeps its tighter,
+   information-dense spacing — the fix is for thumbs, not for everyone. */
+@media (pointer: coarse) {
+  .btn, .tab, .pred-row, .index-card, .quiz-option, .table-row-link {
+    min-height: 44px;
+  }
+  .btn-sm {
+    min-height: 40px;
+    padding-inline: 0.85rem;
+  }
+  /* The checkbox itself can't grow much without looking odd, so the label row
+     carries the touch area instead. Padding does the work, because the row now
+     aligns its control to the top and a short label in a 44px min-height row
+     would leave half the row empty beneath it. min-height stays as the floor:
+     a label set in small text is under 44px even with the padding, and a touch
+     target is not something to leave to the length of a string. */
+  .checkbox-field {
+    padding-block: 0.7rem;
+    min-height: 44px;
+  }
+  .checkbox-field input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+  /* A drawing tool is pressed hundreds of times in a session and on a tablet
+     it is pressed with a fingertip, which has no 30px of precision in it. */
+  .wb-tool, .wb-step, .wb-zoom-level { min-width: 44px; min-height: 44px; }
+  .wb-color { width: 34px; height: 34px; }
+  .wb-size-input { min-height: 44px; }
+  .queue-item .btn { min-height: 40px; }
+}
+
+/* iOS Safari zooms the entire page when a focused field's text is under 16px,
+   which on this app meant tapping the bank's search box threw the layout out of
+   position. 16px is the floor, not a preference. */
+@media (max-width: 860px) {
+  /* .search-input is named explicitly: a class beats the bare `input`
+     selector, so the header's search bar kept its 0.9rem and would have
+     zoomed the page on every tap — the precise bug this block exists to
+     prevent. */
+  .input, .select, .textarea, .search-input, input, select, textarea {
+    font-size: 16px;
+  }
+}
+
+/* The pattern mastery table carries nine columns — fine on a laptop, unreadable
+   on a phone, where it rendered 1038px wide inside a 386px scroller. Rather
+   than force sideways scrolling through the most-used screen on mobile, the
+   columns that inform a decision are kept and the reference detail is dropped:
+   how weak a pattern is, and whether it's improving. */
+@media (max-width: 900px) {
+  .table th:nth-child(3), .table td:nth-child(3),   /* # problems */
+  .table th:nth-child(7), .table td:nth-child(7),   /* ID'd correctly */
+  .table th:nth-child(8), .table td:nth-child(8) {  /* avg time to insight */
+    display: none;
+  }
+}
+@media (max-width: 620px) {
+  .table th:nth-child(4), .table td:nth-child(4),   /* attempts */
+  .table th:nth-child(9), .table td:nth-child(9) {  /* top mistake */
+    display: none;
+  }
+  .table th, .table td { padding-inline: 0.4rem; }
+}
+
+/* A horizontally scrollable region gives no hint that it scrolls until you try.
+   A soft edge fade says "there's more this way" without adding chrome. */
+.table-wrap {
+  background:
+    linear-gradient(to right, var(--surface) 30%, transparent),
+    linear-gradient(to left, var(--surface) 30%, transparent) 100% 0,
+    radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.14), transparent),
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.14), transparent) 100% 0;
+  background-repeat: no-repeat;
+  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* The model's own report card. The caveat is not fine print here — it is the
+   reason the number above it is called agreement, so it gets a rule and the
+   text colour of something you are meant to read, not of something being
+   disclaimed. */
+.scorecard-caveat {
+  border-top: 1px solid var(--border);
+  margin-top: 0.9rem; padding-top: 0.7rem;
+}
+.scorecard-heading { font-size: 0.95rem; margin: 1rem 0 0.4rem; }
+.scorecard-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+.scorecard-list li { line-height: 1.45; }
+
+/* The week in review. Denser than the charts below it: this is an account of
+   what happened, so it should read like a list and not like a dashboard. */
+.week-heading { font-size: 0.95rem; margin: 1.1rem 0 0.4rem; }
+.week-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.week-list li { display: flex; align-items: baseline; gap: 0.45rem; flex-wrap: wrap; line-height: 1.45; }
+/* Takes its fill from the outcome class beside it, which already sets a
+   foreground colour — one source for what each outcome looks like. */
+.outcome-dot {
+  flex: none; width: 0.5rem; height: 0.5rem; border-radius: 50%;
+  background: currentColor; transform: translateY(-0.05em);
+}
+.week-notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.8rem; }
+.week-notes blockquote {
+  margin: 0 0 0.2rem; padding-left: 0.7rem;
+  border-left: 2px solid var(--border); color: var(--text);
+}
+.week-also { margin-top: 1rem; }
+
+/* The quiz's confusion list. The pair is the content, so it leads; the count
+   and the way out are secondary and sit to the right. */
+.confusion-list { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.5rem; }
+.confusion-list li {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.6rem; flex-wrap: wrap;
+}
+.confusion-pair { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+
+/* Mock habits. A bar rather than a percentage: five rates read as a table,
+   and the question is which one is short, not what number it is. */
+.habit-list { list-style: none; margin: 0.8rem 0 0; padding: 0; display: grid; gap: 0.45rem; }
+.habit-list li {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.8rem; flex-wrap: wrap; line-height: 1.4;
+}
+.habit-bar {
+  display: block; width: 5.5rem; height: 0.45rem; flex: none;
+  background: var(--border); border-radius: 999px; overflow: hidden;
+}
+.habit-bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+
+/* What one mock actually did, under its row. */
+.mock-ticks { list-style: none; margin: 0.4rem 0 0; padding: 0; display: grid; gap: 0.15rem; }
+.mock-ticks li { display: flex; gap: 0.4rem; align-items: baseline; font-size: 0.8rem; line-height: 1.35; }
+.tick-done { color: var(--good); }
+.tick-missed > span:first-child { color: var(--text-muted); }
+
+/* Settings, in sections. It had grown to nine cards in one unbroken scroll:
+   connection, budget, intervals, estimates, footprint, import, export,
+   disconnect, welcome replay and the version — finding any of it meant
+   reading all of it. */
+.settings-jump {
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+  margin: 0 0 1rem;
+}
+.settings-jump a {
+  padding: 0.3rem 0.7rem; border: 1px solid var(--border); border-radius: 999px;
+  font-size: 0.82rem; color: var(--text-muted); text-decoration: none;
+}
+.settings-jump a:hover { border-color: var(--accent); color: var(--text); }
+.settings-section { margin-bottom: 2rem; }
+.settings-section > h2 { margin: 0 0 0.2rem; }
+/* The jump links move focus here, and an outline on a heading that was
+   scrolled to rather than tabbed to is noise. */
+.settings-section > h2:focus { outline: none; }
+.settings-section > h2:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.settings-section > p { margin: 0 0 0.9rem; }
+.settings-section .card h3 { font-size: 1rem; margin: 0 0 0.35rem; }
+/* Scrolled-to headings shouldn't land under the sticky header. */
+.settings-section > h2 { scroll-margin-top: 5rem; }
+
+/* Where a statement came from. Under the text rather than above it: it is
+   the answer to a question you only ask after reading something that looks
+   wrong. */
+.ws-statement-source {
+  margin: 0.8rem 0 0; padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+
+/* What you did last time, above the statement. Set apart from the statement
+   below it, because it is about you and the statement is about the problem. */
+.ws-prior {
+  margin: 0 0 1rem; padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border);
+}
+.ws-prior > p { margin: 0 0 0.35rem; }
+.ws-prior-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.ws-prior-watch { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+/* Your own note, behind the same fold as the code: it is usually the insight
+   itself, which is the thing you are here to reproduce. */
+.ws-prior-note {
+  margin: 0.5rem 0; padding-left: 0.7rem;
+  border-left: 2px solid var(--border); color: var(--text);
+}
+
+/* Where you stand on a pattern, in the topic header. The full history is still
+   at the bottom of the page, which is right for a chart — but "how am I doing
+   on this" should not need a scroll past two diagrams to answer. */
+.topic-record {
+  display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap;
+  margin: 0.7rem 0 0; padding-top: 0.6rem;
+  border-top: 1px solid var(--border);
+}
+
+/* The footprint breakdown. A list rather than a run-on sentence: the point is
+   which line is the big one, and that is a comparison you make down a column. */
+.footprint-list { list-style: none; margin: 0.6rem 0; padding: 0; display: grid; gap: 0.35rem; }
+.footprint-list li { line-height: 1.45; }
+
+/* Which copy of the app this is. Loud on purpose — the whole job of this
+   element is to be impossible to miss and impossible to mistake for part of
+   the design. */
+.channel-badge {
+  align-self: center;
+  padding: 0.15rem 0.5rem; border-radius: 4px;
+  background: var(--warn); color: #1b1300;
+  font-family: var(--font-mono); font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+/* And a hairline down the whole window, so it reads as dev even when the
+   header has scrolled away. */
+:root[data-channel="dev"] body { box-shadow: inset 0 0 0 2px var(--warn); }
+:root[data-channel="demo"] body { box-shadow: inset 0 0 0 2px var(--warn); }
+/* The demo's way back to the real app: plain text beside the badge, not a button, so it never competes with the app. */
+.channel-exit { align-self: center; color: inherit; text-decoration: underline; }
+
+/* The "Support this project" footer: quiet text outside <main>, so it is on every screen without competing with any. */
+.support-footer { padding: 1rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+.support-footer a { color: inherit; text-decoration: underline; }
+.support-footer a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* The timebox, before and during a session. Widths in proportion to minutes,
+   because the shape of the box is the information — that planning is a quarter
+   of a hard problem and reading is five minutes of anything. */
+.box-preview { margin: 0.9rem 0; }
+.box-phases {
+  list-style: none; margin: 0.5rem 0; padding: 0;
+  display: flex; gap: 2px; align-items: stretch;
+}
+.box-phases li {
+  /* A floor as well as a share: the shortest stage is two minutes out of
+     thirty, and at its true proportion the bar clipped its own label to
+     "Core en". The widths stay proportional above the floor, which is what
+     the bar is for. */
+  flex-basis: 0; min-width: 7rem;
+  padding: 0.4rem 0.5rem; border-radius: 3px;
+  background: var(--surface-2, var(--border)); overflow: hidden;
+}
+/* Five stages at their 7rem floor need 35rem. Below that the bar stops being
+   a bar and becomes a list, which is still readable — a clipped label is not. */
+@media (max-width: 620px) { .box-phases { flex-wrap: wrap; } }
+.box-phases li:first-child { border-radius: 4px 3px 3px 4px; }
+.box-phases li:last-child { border-radius: 3px 4px 4px 3px; }
+.box-phase-label { display: block; font-weight: 600; font-size: 0.8rem; }
+/* The nudge a minute before a phase ends. Only appears then, so it can afford
+   to be loud. */
+.mock-phase-next {
+  margin-left: 0.5rem; padding: 0.1rem 0.4rem; border-radius: 3px;
+  background: var(--warn); color: #1b1300;
+  font-size: 0.7rem; font-weight: 700; white-space: nowrap;
+}
+
+/* The per-difficulty time table. Narrow number inputs, because a minute count
+   is two digits and a full-width field invites a paragraph. */
+.timebox-table td { vertical-align: middle; }
+.input-xs { max-width: 5rem; }
+
+/* The tool strip. Icon buttons rather than labels: seven tools with words
+   would wrap on a phone and push the canvas off the screen, and every one of
+   them has a keyboard letter in its tooltip for the people who will use it
+   every day. */
+.wb-tools { display: flex; gap: 2px; flex-wrap: wrap; }
+.wb-tool {
+  width: 1.9rem; height: 1.9rem; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid transparent; border-radius: 4px;
+  background: transparent; color: var(--text-muted);
+  font-size: 0.95rem; line-height: 1; cursor: pointer;
+}
+.wb-tool:hover { color: var(--text); border-color: var(--border); }
+.wb-tool[aria-pressed="true"] {
+  background: var(--accent); border-color: var(--accent); color: #0c1512;
+}
+/* The canvas takes focus so its shortcuts work, and says so without a ring
+   round the whole drawing. */
+.whiteboard-canvas:focus { outline: none; }
+.whiteboard-canvas:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* The watcher's page. Two panes side by side on a laptop, stacked on a phone —
+   an interviewer may well be on one. */
+.interview-body { padding: 0 1rem 2rem; }
+.iv-panes { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-top: 1rem; }
+@media (min-width: 900px) { .iv-panes { grid-template-columns: 1fr 1fr; } }
+.iv-pane { display: flex; flex-direction: column; min-width: 0; }
+.iv-pane h3 { margin: 0 0 0.6rem; font-size: 0.95rem; }
+.iv-board { height: 22rem; }
+.iv-board .wb-stage { flex: 1; min-height: 0; height: 100%; }
+#iv-code { max-height: 22rem; overflow: auto; margin: 0; }
+.iv-problem .ws-statement { margin-top: 0.7rem; max-height: 12rem; overflow: auto; }
+
+/* System design. The walkthrough is a sequence rather than a diagram, so it
+   reads as numbered steps with the reasoning subordinate to each — the shape of
+   an argument, which is what an interview asks you to reconstruct. */
+.walk-stages { list-style: none; margin: 0.8rem 0 0; padding: 0; display: grid; gap: 1rem; }
+.walk-stage { padding-left: 0.9rem; border-left: 2px solid var(--border); }
+.walk-stage h3 { font-size: 0.95rem; margin: 0 0 0.35rem; }
+.walk-stage p { margin: 0 0 0.4rem; }
+/* The step just revealed, so a reader's eye lands on the new one rather than
+   re-reading from the top each time. */
+.walk-stage-current { border-left-color: var(--accent); }
+.walk-watch { color: var(--warn); }
+.walk-components { margin-top: 0.4rem; flex-wrap: wrap; }
+.walk-components .pill { cursor: pointer; border: 0; font: inherit; font-size: 0.72rem; }
+
+.alt-list, .depth-list { list-style: none; margin: 0.5rem 0 0; padding: 0; display: grid; gap: 0.45rem; }
+.alt-list li, .depth-list li { display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; line-height: 1.45; }
+
+/* A design session is the whiteboard, with the brief beside it on request. */
+.ds-panes { display: flex; flex: 1; min-height: 0; gap: 0; }
+.ds-brief { flex: 0 0 22rem; max-width: 40%; border-right: 1px solid var(--border); overflow: auto; }
+.ds-board-pane { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+@media (max-width: 720px) {
+  .ds-panes { flex-direction: column; }
+  .ds-brief { flex: 0 0 auto; max-width: none; max-height: 40%; border-right: 0; border-bottom: 1px solid var(--border); }
+}
+
+/* The design card on the dashboard. Set apart from the coding recommendation
+   above it without competing with it — the two halves are one day, and the
+   coding one owns the headline. */
+.design-card { border-left: 3px solid var(--accent); }
+
+/* ---------- A design session, stage by stage ----------
+
+   The interview has a shape — requirements, entities, API, high-level, deep
+   dives — and the shape is on screen the whole way through rather than being
+   explained once at the start. Every stage is the same two-column idea: what
+   you wrote on the left, the reference on the right, and never the reference
+   first. */
+
+.ds-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: auto; }
+
+/* The strip of stages in the bar. Numbered, because the order is the part
+   being taught: an API designed before the entities exist has nothing to
+   carry. */
+.ds-steps {
+  list-style: none; display: flex; flex-wrap: wrap; gap: 0.3rem;
+  margin: 0.35rem 0 0; padding: 0;
+}
+.ds-step {
+  display: flex; align-items: center; gap: 0.3rem;
+  padding: 0.15rem 0.5rem 0.15rem 0.2rem; border-radius: 999px;
+  border: 1px solid transparent; font-size: 0.72rem; color: var(--text-muted);
+}
+.ds-step.current { border-color: var(--accent); color: var(--text); }
+.ds-step.done { color: var(--good); }
+.ds-step-n {
+  width: 1.15rem; height: 1.15rem; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; background: var(--surface-alt);
+  font-size: 0.66rem; font-weight: 700;
+}
+.ds-step.current .ds-step-n { background: var(--accent); color: #0c1512; }
+.ds-step.done .ds-step-n { background: var(--good-bg); color: var(--good); }
+.ds-step-label { font-weight: 600; }
+.ds-step-min { font-variant-numeric: tabular-nums; opacity: 0.7; }
+
+/* Writing a stage: the answer takes the room, the brief sits beside it. The
+   brief is there because every stage after the first is supposed to be built
+   on the ones before, and it cannot be if they are off screen. */
+.ds-write {
+  display: grid; grid-template-columns: 1fr; gap: 1rem;
+  padding: var(--page-pad); align-content: start;
+}
+@media (min-width: 900px) { .ds-write { grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr); } }
+.ds-write-card { margin-bottom: 0; }
+.ds-aside { margin-bottom: 0; align-self: start; }
+.ds-hint { border-left: 2px solid var(--border); padding-left: 0.6rem; margin: 0.4rem 0 0.8rem; }
+.ds-answer { font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5; resize: vertical; }
+.ds-question { font-size: 1.1rem; margin: 0.2rem 0 0.6rem; }
+
+/* Typed answers are read back as prose: newlines are how somebody wrote a
+   list, and collapsing them would show them something they did not type. */
+.ds-recall { white-space: pre-wrap; }
+
+.ds-key { margin-top: 0.9rem; padding-top: 0.9rem; border-top: 1px solid var(--border); }
+.ds-watch { color: var(--warn); font-size: 0.82rem; }
+.ds-thumb {
+  display: block; width: 100%; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface-alt);
+}
+
+/* The check. Two columns on a laptop so the gap is visible at a glance rather
+   than by scrolling between them; stacked below that, yours first. */
+.ds-compare {
+  display: grid; grid-template-columns: 1fr; gap: 1rem;
+  padding: var(--page-pad); align-content: start;
+}
+@media (min-width: 1000px) { .ds-compare { grid-template-columns: 1fr 1fr; } }
+.ds-compare > .card { margin-bottom: 0; }
+.ds-key-card { border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
+
+.ds-check { margin-top: 0.9rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+.ds-check .label { display: block; margin-bottom: 0.4rem; }
+.ds-check-btn.active { border-color: var(--accent); color: var(--text); }
+
+.ds-recap { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.ds-recap-q { font-weight: 650; margin: 0 0 0.3rem; }
+
+.ds-entities, .ds-api {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 0.8rem;
+}
+.ds-entity-name { font-weight: 650; margin: 0; }
+.ds-entity-fields, .ds-api-call { margin: 0.15rem 0; }
+.ds-entity-fields code, .ds-api-call code { font-size: 0.8rem; }
+.ds-api-call { font-weight: 650; }
+
+.ds-walk { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 1rem; }
+.ds-walk h3 { font-size: 0.95rem; margin: 0 0 0.3rem; }
+.ds-walk p { margin: 0 0 0.3rem; }
+
+.ds-covered { margin-top: 1rem; padding-top: 0.9rem; border-top: 1px solid var(--border); }
+
+.ds-summary td, .ds-summary th { font-size: 0.85rem; }
+/* A stage that ran over its box, said plainly. Spending nine minutes naming
+   three nouns is the specific mistake the timebox exists to surface. */
+.over-box { color: var(--warn); font-weight: 650; }
+
+/* ---------- What you're preparing for ----------
+
+   Four answers that decide what the rest of the app recommends. The readouts
+   below them exist so the effect of an answer is visible in the same breath as
+   the answer — a profile whose consequences are three screens away is a
+   profile nobody trusts. */
+
+.prep-readout { margin: 0.7rem 0 0.2rem; font-size: 0.95rem; }
+.prep-warn { margin-top: 0.8rem; padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.85rem; }
+
+.prep-blocks {
+  list-style: none; margin: 0.5rem 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: 0.9rem;
+}
+.prep-block-head {
+  display: flex; align-items: baseline; gap: 0.5rem;
+  margin: 0 0 0.35rem; padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---------- The week ----------
+
+   Seven cards rather than a grid of checkboxes. The question somebody has is
+   "what is Tuesday", and a grid makes them answer it by counting columns. */
+
+.week-grid {
+  list-style: none; margin: 0.6rem 0 0; padding: 0;
+  display: grid; gap: 0.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));
+}
+.week-day {
+  padding: 0.6rem 0.7rem; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface-alt);
+}
+/* Today is marked because the week is read to answer one question most of the
+   time, and that question is about today. */
+.week-day.today { border-color: var(--accent); }
+.week-day.resting { opacity: 0.75; }
+.week-day-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 0.4rem; margin: 0 0 0.45rem;
+}
+.week-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.week-items li { display: flex; align-items: center; gap: 0.3rem; }
+.week-items .select-xs { flex: 1 1 auto; min-width: 0; }
+.week-drop { flex: none; color: var(--text-muted); font-size: 1rem; line-height: 1; }
+.week-drop:hover { color: var(--bad); }
+
+/* Today, according to the week. Above the recommendation because it decides
+   whether there is one: on a rest day there is nothing to recommend. */
+.today-card.complete { border-color: color-mix(in srgb, var(--good) 45%, var(--border)); }
+.today-card.resting { opacity: 0.9; }
+.today-items { list-style: none; margin: 0.7rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.today-items li { display: flex; align-items: flex-start; gap: 0.5rem; }
+.today-items li.met { color: var(--text-muted); }
+.today-tick { flex: none; width: 1.1rem; font-weight: 700; color: var(--text-muted); }
+.today-items li.met .today-tick { color: var(--good); }
+/* A tick you press, for the things the log cannot see. Sized as a control and
+   shaped like the read-only tick beside it, so the two read as one list. */
+.today-check {
+  background: transparent; border: 1px solid var(--border); border-radius: 50%;
+  width: 1.4rem; height: 1.4rem; padding: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font: inherit; font-size: 0.8rem; line-height: 1;
+}
+.today-check:hover { border-color: var(--accent); color: var(--text); }
+.today-items li.met .today-check { border-color: var(--good); }
+/* Once the day is done, more is an offer rather than an ask, and it should
+   look like one. */
+.session-cta-card.optional { border-color: var(--border); }
+.session-cta-card.optional .btn-primary { background: transparent; color: var(--text); border-color: var(--border); }
+.setup-nudge { padding-block: 0.7rem; }
+.setup-nudge p { margin: 0; }
+/* Home's note that the saved interview date has passed. Quiet like the setup
+   nudge: it offers a way forward and is gone after one press. */
+.after-interview { padding-block: 0.8rem; }
+.after-interview p { margin: 0 0 0.6rem; }
+
+/* ---------- Your language ----------
+
+   Written, not chosen. Recognising the right heap declaration among four is
+   not the skill; producing it on a blank line with a clock running is. */
+.fluency-prompt { font-size: 1.1rem; margin: 0.25rem 0 0.8rem; }
+.fluency-attempt { font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5; tab-size: 2; }
+.fluency-answer { margin-top: 0.9rem; padding-top: 0.8rem; border-top: 1px solid var(--border); }
+.fluency-code {
+  margin: 0.3rem 0 0.6rem; padding: 0.7rem 0.8rem; overflow-x: auto;
+  background: var(--surface-alt); border: 1px solid var(--border); border-radius: 6px;
+  font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.5;
+}
+.fluency-trap { color: var(--warn); font-size: 0.85rem; }
+.fluency-grades { margin: 0.6rem 0 0.4rem; flex-wrap: wrap; }
+/* The inline-code chip style pads the start of its box, which inside a block
+   only shifts the first line — the answer read as if line one were indented. */
+.fluency-code code { padding: 0; background: none; border: 0; border-radius: 0; font-size: inherit; }
+/* The clean-code bar at reflect. Set apart from the mistake tags because it is
+   a different question: not what went wrong, but what a top-tier interviewer
+   would have noticed about code that went right. */
+.clean-bar { padding: 0.7rem 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-alt); }
+.clean-bar .checklist { margin: 0.4rem 0 0; }
+
+/* ---------- The long session ----------
+
+   The step in hand, large, with its clock; the whole day below it, small. You
+   come back to this page between steps, so the one thing it must answer at a
+   glance is "what now". */
+.long-now { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.long-now.is-break { border-color: color-mix(in srgb, var(--good) 45%, var(--border)); }
+.long-clock {
+  font-family: var(--font-mono); font-size: 2rem; font-weight: 700;
+  font-variant-numeric: tabular-nums; line-height: 1;
+}
+.long-steps { list-style: none; margin: 0.5rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.long-step { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.5rem; border-radius: 6px; }
+.long-step.current { background: var(--surface-alt); outline: 1px solid var(--accent); }
+.long-step.done, .long-step.skipped { color: var(--text-muted); }
+.long-step.is-break .long-step-body strong { font-weight: 500; font-style: italic; }
+.long-step-mark {
+  flex: none; width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-alt); font-size: 0.72rem; font-weight: 700;
+}
+.long-step.done .long-step-mark { background: var(--good-bg); color: var(--good); }
+.long-step.current .long-step-mark { background: var(--accent); color: #0c1512; }
+.long-step-body { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; }
+.long-resume { margin: 0.8rem 0 0; padding-top: 0.6rem; border-top: 1px solid var(--border); font-size: 0.85rem; }
+
+/* ---------- Clarify ----------
+
+   The prompt is set as a quotation because it is one: this is what the
+   interviewer says, and its vagueness is the point. */
+.clarify-prompt { font-size: 1.15rem; font-style: italic; margin: 0.25rem 0 0.7rem; }
+.clarify-habit { padding-block: 0.6rem; }
+.clarify-habit p { margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.clarify-compare { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 900px) { .clarify-compare { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); } }
+.clarify-compare > .card { margin-bottom: 0; }
+.clarify-list li { padding-block: 0.45rem; border-bottom: 1px solid var(--border); }
+.clarify-list li:last-child { border-bottom: 0; }
+
+/* The round's two results, one line each: what it was, how long, how it went. */
+.pair-results { margin: 0.6rem 0; padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.pair-results li span { margin-left: 0.4rem; }
+
+/* A pattern's catalog ladder (js/topic-practice.js). */
+.ladder-subhead { margin: 1.1rem 0 0.3rem; font-size: 0.95rem; }
+.catalog-rung { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.catalog-rung-name { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; min-width: 0; }
+
+/* The design board's stencil (js/design-session.js). */
+.ds-stencil { display: flex; gap: 0.4rem; align-items: center; padding: 0.45rem 0.6rem; border-bottom: 1px solid var(--border); }
+.ds-stencil .input { flex: 1; min-width: 0; }
+
+/* A component's follow-ups and numbers (js/design-view.js). */
+.followup-list { display: flex; flex-direction: column; gap: 0.35rem; }
+.followup { border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem; }
+.followup summary { cursor: pointer; font-weight: 600; }
+.followup[open] summary { margin-bottom: 0.4rem; }
+.followup p { margin: 0; color: var(--text-muted); line-height: 1.55; }
+.followup-plain { margin: 0; }
+.numbers-list { display: grid; grid-template-columns: auto 1fr; gap: 0.35rem 1rem; margin: 0; align-items: baseline; }
+.numbers-list dt { margin: 0; font-family: var(--font-mono); font-weight: 700; white-space: nowrap; }
+.numbers-list dd { margin: 0; color: var(--text-muted); }
+@media (max-width: 520px) { .numbers-list { grid-template-columns: 1fr; } .numbers-list dt { white-space: normal; } }

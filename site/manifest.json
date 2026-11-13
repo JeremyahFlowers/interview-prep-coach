@@ -1,0 +1,13 @@
+{
+  "name": "Ledger — Interview Prep System",
+  "short_name": "Ledger",
+  "description": "Spaced-repetition tracker, weak-pattern dashboard, and mock-interview trainer for coding interview prep.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0E1512",
+  "theme_color": "#123B3A",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
